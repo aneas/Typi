@@ -1,0 +1,49 @@
+var XOpenDisplay        = ffi("libX11.so", "XOpenDisplay"       , "pointer", "pointer");
+var XDefaultScreen      = ffi("libX11.so", "XDefaultScreen"     , "sint32", "pointer");
+var XRootWindow         = ffi("libX11.so", "XRootWindow"        , "uint64", "pointer", "sint32");
+var XCreateSimpleWindow = ffi("libX11.so", "XCreateSimpleWindow", "uint64", "pointer", "uint64", "sint32", "sint32", "sint32", "sint32", "sint32", "uint64", "uint64");
+var XMapWindow          = ffi("libX11.so", "XMapWindow"         , "sint32", "pointer", "uint64");
+var XBlackPixel         = ffi("libX11.so", "XBlackPixel"        , "uint64", "pointer", "sint32");
+var XWhitePixel         = ffi("libX11.so", "XWhitePixel"        , "uint64", "pointer", "sint32");
+var XNextEvent          = ffi("libX11.so", "XNextEvent"         , "sint32", "pointer", "pointer");
+var XFlush              = ffi("libX11.so", "XFlush"             , "sint32", "pointer");
+var XDefaultVisual      = ffi("libX11.so", "XDefaultVisual"     , "pointer", "pointer", "sint32");
+var XSelectInput        = ffi("libX11.so", "XSelectInput"       , "sint32", "pointer", "uint64", "sint64");
+
+
+var cairo_xlib_surface_create = ffi("libcairo.so.2", "cairo_xlib_surface_create", "pointer", "pointer", "uint64", "pointer", "sint32", "sint32");
+var cairo_create              = ffi("libcairo.so.2", "cairo_create"             , "pointer", "pointer");
+var cairo_paint               = ffi("libcairo.so.2", "cairo_paint"              , "void", "pointer");
+var cairo_set_source_rgb      = ffi("libcairo.so.2", "cairo_set_source_rgb"     , "void", "pointer", "double", "double", "double");
+var cairo_surface_flush       = ffi("libcairo.so.2", "cairo_surface_flush"      , "void", "pointer");
+var cairo_move_to             = ffi("libcairo.so.2", "cairo_move_to"            , "void", "pointer", "double", "double");
+var cairo_line_to             = ffi("libcairo.so.2", "cairo_line_to"            , "void", "pointer", "double", "double");
+var cairo_stroke              = ffi("libcairo.so.2", "cairo_stroke"             , "void", "pointer");
+var cairo_fill                = ffi("libcairo.so.2", "cairo_fill"               , "void", "pointer");
+var cairo_set_line_width      = ffi("libcairo.so.2", "cairo_set_line_width"     , "void", "pointer", "double");
+
+
+var display = XOpenDisplay(0);
+var screen  = XDefaultScreen(display);
+var root    = XRootWindow(display, screen);
+var window  = XCreateSimpleWindow(display, root, 0, 0, 800, 600, 0, XBlackPixel(display, screen), XWhitePixel(display, screen));
+XSelectInput(display, window, 32768); // 1 << 15 ExposureMask
+XMapWindow(display, window);
+
+var visual  = XDefaultVisual(display, screen);
+var surface = cairo_xlib_surface_create(display, window, visual, 800, 600);
+var ctx     = cairo_create(surface);
+
+var event = malloc(1000);
+while(true) {
+	XNextEvent(display, event);
+	cairo_set_source_rgb(ctx, 1.0, 0.0, 0.0);
+	cairo_paint(ctx);
+	cairo_set_source_rgb(ctx, 1.0, 1.0, 1.0);
+	cairo_set_line_width(ctx, 1.0);
+	cairo_move_to(ctx, 50.0, 50.0);
+	cairo_line_to(ctx, 150.0, 150.0);
+	cairo_stroke(ctx);
+	cairo_surface_flush(surface);
+	XFlush(display);
+}
