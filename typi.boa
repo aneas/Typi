@@ -21,7 +21,9 @@ var cairo_line_to             = ffi("libcairo.so.2", "cairo_line_to"            
 var cairo_stroke              = ffi("libcairo.so.2", "cairo_stroke"             , "void", "pointer");
 var cairo_fill                = ffi("libcairo.so.2", "cairo_fill"               , "void", "pointer");
 var cairo_set_line_width      = ffi("libcairo.so.2", "cairo_set_line_width"     , "void", "pointer", "double");
-
+var cairo_show_text           = ffi("libcairo.so.2", "cairo_show_text"          , "void", "pointer", "pointer");
+var cairo_set_font_size       = ffi("libcairo.so.2", "cairo_set_font_size"      , "void", "pointer", "double");
+var cairo_select_font_face    = ffi("libcairo.so.2", "cairo_select_font_face"   , "void", "pointer", "pointer", "sint32", "sint32");
 
 var display = XOpenDisplay(0);
 var screen  = XDefaultScreen(display);
@@ -37,13 +39,16 @@ var ctx     = cairo_create(surface);
 var event = malloc(1000);
 while(true) {
 	XNextEvent(display, event);
-	cairo_set_source_rgb(ctx, 1.0, 0.0, 0.0);
+	cairo_set_source_rgb(ctx, 0.2, 0.2, 0.2);
 	cairo_paint(ctx);
 	cairo_set_source_rgb(ctx, 1.0, 1.0, 1.0);
 	cairo_set_line_width(ctx, 1.0);
 	cairo_move_to(ctx, 50.0, 50.0);
 	cairo_line_to(ctx, 150.0, 150.0);
 	cairo_stroke(ctx);
+	cairo_move_to(ctx, 200.0, 200.0);
+	cairo_set_font_size(ctx, 20.0);
+	cairo_show_text(ctx, "test");
 	cairo_surface_flush(surface);
 	XFlush(display);
 }
